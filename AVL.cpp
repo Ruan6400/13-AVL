@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstdio>
 using namespace std;
 
 // definicao de tipo
@@ -30,6 +31,7 @@ NO* criaNO(int valor);
 int elementosArvore(NO* no);
 void exibirElementosArvore(NO* no, int qtespacos);
 void buscarElementoArvore(NO* no, int valor);
+void ExibeArvore(NO* no,int nivel);
 //--------------------------
 
 // funcoes auxiliares balaceamento
@@ -50,7 +52,7 @@ void menu()
 {
 	int op = 0;
 	while (op != 6) {
-		system("cls"); // somente no windows
+		system("clear"); // somente no windows
 		cout << "Menu Arvore";
 		cout << endl << endl;
 		cout << "1 - Inicializar Arvore \n";
@@ -79,7 +81,7 @@ void menu()
 			break;
 		}
 
-		system("pause"); // somente no windows
+		getchar(); // somente no windows
 	}
 }
 
@@ -104,7 +106,8 @@ void exibirQuantidade() {
 }
 
 void exibir() {
-	exibirElementosArvore(raiz, 0);
+	ExibeArvore(raiz, 0);
+	getchar();
 }
 
 void buscar() {
@@ -167,17 +170,20 @@ NO* insereArvore(NO* no, int valor)
 		// arvore vazia
 		return criaNO(valor);
 	}
-	else if (valor < no->valor) {
-		// insere na subarvore esquerda
-		no->esq = insereArvore(no->esq, valor);
-	}
-	else if (valor > no->valor) {
-		// insere na subarvore direita
-		no->dir = insereArvore(no->dir, valor);
-	}
-	else {
-		// valor ja existe
-		return no;
+	else{
+	    if (valor < no->valor) {
+	        // insere na subarvore esquerda
+	        no->esq = insereArvore(no->esq, valor);
+	    }
+	    else{
+	        if (valor > no->valor) {
+	            // insere na subarvore direita
+	            no->dir = insereArvore(no->dir, valor);
+	        }
+	        else{
+	            return no;
+	        }
+	    }
 	}
 
 	// atualiza a altura do no (lembre-se que esta � fun��o recursiva)
@@ -209,12 +215,20 @@ NO* insereArvore(NO* no, int valor)
 NO* girarDireita(NO* no)
 {
 	// sua implementa��o vai aqui
+	NO* GalhoLateral = no;
+	no=no->esq;
+	no->dir=GalhoLateral;
+	GalhoLateral->esq=NULL;
 	return no;
 }
 
 NO* girarEsquerda(NO* no)
 {
 	// sua implementa��o vai aqui
+	NO* GalhoLateral = no;
+	no=no->dir;
+	no->esq=GalhoLateral;
+	GalhoLateral->dir=NULL;
 	return no;
 }
 
@@ -298,6 +312,15 @@ NO* buscarElementoArvoreComPai(NO* no, int valor, NO*& pai)
 	return NULL;
 }
 
+void ExibeArvore(NO* no,int nivel){
+    if(no==NULL){return;}
+    for(int i=0;i<nivel;i++){
+        cout<<" - ";
+    }
+    cout<<no->valor<<endl;
+    ExibeArvore(no->dir,nivel+1);
+    ExibeArvore(no->esq,nivel+1);
+}
 
 
 
