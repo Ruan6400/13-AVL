@@ -1,305 +1,258 @@
-#include <iostream>
-using namespace std;
-
-// definicao de tipo
-struct NO {
-	int valor;
-	NO* esq;
-	NO* dir;
-	int altura; // usada para balanceamento
+#include <iostream> 
+#include <cstdio>
+using namespace std; 
+  
+struct NO{
+    int valor; 
+    NO* esq;
+    NO* dir;
 };
 
-NO* raiz = NULL;
-
-// headers
-// estrutura principal
-void menu();
-void inicializar();
-void inserir();
+NO* raiz=NULL;
+  
+void menu(); 
+void inserir(); 
 void exibir();
-void exibirQuantidade();
-void buscar();
+void excluir();
+void equilibrar(NO* no,NO* anterior,bool& falha);
 
-
-
-// funcoes auxiliares Arvore
-NO* insereArvore(NO* no, int valor);
-NO* criaNO(int valor);
-int elementosArvore(NO* no);
-void exibirElementosArvore(NO* no, int qtespacos);
-void buscarElementoArvore(NO* no, int valor);
-//--------------------------
-
-// funcoes auxiliares balaceamento
-int alturaNo(NO* no);
-int fatorBalanceamento(NO* no);
-int max(int a, int b);
-NO* girarDireita(NO* no);
-NO* girarEsquerda(NO* no);
-//--------------------------
-
-
-int main()
-{
-	menu();
+void ProcuraDeleta(NO* no, int numero,NO* anterior);
+NO* LinhaReta(NO* no,bool Esq);
+void ExibirArvore(NO* no,int nivel,string posicao);
+void InserirArvore(NO* atual,NO* novo,NO* anterior);
+void Altura(NO* no,int alt,bool Dir);
+int AlturaArvoreDir=0;
+int AlturaArvoreEsq=0;
+int main(){ 
+    menu(); 
+} 
+  
+void menu(){ 
+    int op=0; 
+    while(op!=4){ 
+       system("clear"); 
+       cout<<"Estrutura Arvore \n\n"; 
+       cout<<"1 - inserir\n"; 
+       cout<<"2 - exibir\n"; 
+       cout<<"3 - excluir\n";
+       cout<<"4 - sair\n";
+       cout<<"digite a opcao: \n"; 
+       cin>>op; 
+       switch(op){ 
+           case 1: inserir(); 
+                   break; 
+           case 2: exibir(); 
+                   break; 
+           case 3: excluir();
+                   break;
+           case 4: return;
+           default: break; 
+       } 
+       getchar(); 
+    } 
+} 
+  
+void inserir(){ 
+     int Num; 
+     cout<<"Digite um valor: "; 
+     cin>>Num; 
+     NO* novo = (NO*)malloc(sizeof(NO)); 
+     novo->valor = Num; 
+     novo->dir=NULL; 
+     novo->esq=NULL; 
+     if(raiz==NULL){ 
+         raiz=novo; 
+     }
+     else{
+         InserirArvore(raiz,novo,NULL);
+     }
+     cout<<"Valor inserido"<<endl;
+     bool falha = false;
+     do{
+         equilibrar(raiz,NULL,falha);
+     }while(falha);
+     getchar();
 }
 
-void menu()
-{
-	int op = 0;
-	while (op != 6) {
-		system("cls"); // somente no windows
-		cout << "Menu Arvore";
-		cout << endl << endl;
-		cout << "1 - Inicializar Arvore \n";
-		cout << "2 - Exibir quantidade de elementos \n";
-		cout << "3 - Inserir elemento \n";
-		cout << "4 - Exibir elementos \n";
-		cout << "5 - Buscar elemento \n";
-		cout << "6 - Sair \n";
-
-		cout << "Opcao: ";
-		cin >> op;
-
-		switch (op)
-		{
-		case 1: inicializar();
-			break;
-		case 2:exibirQuantidade();
-			break;
-		case 3: inserir();
-			break;
-		case 4: exibir();
-			break;
-		case 5: buscar();
-			break;
-		default:
-			break;
-		}
-
-		system("pause"); // somente no windows
-	}
+void exibir(){
+     if(raiz!=NULL){
+         ExibirArvore(raiz,0,"raiz");
+     }
+     else{cout<<"Ãrvore vazia"<<endl;}
+     getchar();
+}
+void excluir(){
+    if(raiz==NULL){
+        cout<<"Arvore vazia \n";
+        getchar();
+        return;
+    }
+    else{
+        int numero;
+        cout<<"Digite o elemento: \n";
+        cin>>numero;
+        if(raiz->valor==numero){
+            NO* paraExcluir=raiz;
+            if(raiz->dir!=NULL){
+                if(raiz->esq!=NULL){
+                    NO* PontaSolta = LinhaReta(raiz->dir,true);
+                    PontaSolta->esq=raiz->esq;
+                }
+                raiz=raiz->dir;
+            }
+            else{
+                if(raiz->esq!=NULL){
+                    raiz=raiz->esq;
+                }
+                else{
+                    raiz=NULL;
+                }
+            }
+            free(paraExcluir);
+            cout<<"Valor deletado\n";
+            getchar();
+        }
+        else{
+            ProcuraDeleta(raiz,numero,NULL);
+        }
+        bool falha = false;
+        do{
+            equilibrar(raiz,NULL,falha);
+        }while(falha);
+    }
+}
+void equilibrar(NO* no,NO* anterior,bool& falha){
+    if(no==NULL){return;}
+    AlturaArvoreEsq=0;
+    AlturaArvoreDir=0;
+    Altura(no->dir,1,true);
+    Altura(no->esq,1,false);
+    int Peso=AlturaArvoreDir - AlturaArvoreEsq;
+    if(Peso>1){
+        falha=true;
+        if(no==raiz){
+            raiz=raiz->dir;
+            NO* PontaSolta = LinhaReta(raiz,true);
+            PontaSolta->esq=no;
+            no->dir=NULL;
+        }
+        else{
+            anterior->dir=no->dir;
+            NO* PontaSolta = LinhaReta(anterior->dir,true);
+            PontaSolta->esq=no;
+            no->dir=NULL;
+        }
+    }
+    else{
+        if(Peso<-1){
+            falha=true;
+            if(no==raiz){
+                raiz=raiz->esq;
+                NO* PontaSolta = LinhaReta(raiz,false);
+                PontaSolta->dir=no;
+                no->esq=NULL;
+            }
+            else{
+                anterior->esq=no->esq;
+                NO* PontaSolta = LinhaReta(anterior->esq,false);
+                PontaSolta->dir=no;
+                no->esq=NULL;
+            }
+        }
+        else{
+            falha=false;
+            equilibrar(no->dir,no,falha);
+            equilibrar(no->esq,no,falha);
+        }
+    }
 }
 
-void inicializar()
-{
-	raiz = NULL;
-	cout << "Arvore inicializada \n";
+void ProcuraDeleta(NO* no,int numero,NO* anterior){
+    if(no==NULL){
+        cout<<"Valor nao encontrado.";
+        getchar();
+        return;
+    }
+    if(no->valor==numero){
+        if(no->dir!=NULL){
+            if(no->dir->valor>anterior->valor){anterior->dir=no->dir;}
+            else{anterior->esq=no->dir;}
+            if(no->esq!=NULL){
+                NO* PontaSolta = LinhaReta(no->dir,true);
+                PontaSolta->esq=no->esq;
+            }
+        }
+        else{
+            if(no->esq!=NULL){
+                if(no->esq->valor>anterior->valor){anterior->dir=no->esq;}
+                else{anterior->esq=no->esq;}
+            }
+            else{
+                if(no->valor>anterior->valor){anterior->dir=NULL;}
+                else{anterior->esq=NULL;}
+            }
+        }
+        free(no);
+        cout<<"Valor deletado"<<endl;
+        getchar();
+        return;
+    }
+    if(numero>no->valor){ProcuraDeleta(no->dir,numero,no);}
+    else{ProcuraDeleta(no->esq,numero,no);}
 }
 
-
-void inserir()
-{
-	int valor;
-	cout << "Digite o elemento: ";
-	cin >> valor;
-	raiz = insereArvore(raiz, valor);
+NO* LinhaReta(NO* no, bool Esq){
+    if(Esq){
+        if(no->esq==NULL){ return no;}
+        else{ return LinhaReta(no->esq,true);}
+    }
+    else{
+        if(no->dir==NULL){ return no;}
+        else{ return LinhaReta(no->dir,false);}
+    }
+}
+ 
+void InserirArvore(NO* atual,NO* novo,NO* anterior){
+     if(atual==NULL){
+         if(novo->valor>anterior->valor){
+             anterior->dir=novo;
+         }
+         else{
+             anterior->esq=novo;
+         }
+     }
+     else{
+         if(novo->valor>atual->valor){
+             InserirArvore(atual->dir,novo,atual);
+         }
+         else{
+             InserirArvore(atual->esq,novo,atual);
+         }
+     }
+}
+ 
+void ExibirArvore(NO* no,int nivel,string posicao){
+     if(no==NULL){
+         return;
+     }
+     for(int i=0;i<nivel;i++){
+        cout<<" - ";
+     }
+     cout<<"nivel "<<nivel<<" "<<posicao<<" : "<<no->valor<<endl;
+     if(no->dir!=NULL){ExibirArvore(no->dir,nivel+1,"dir");}
+     if(no->esq!=NULL){ExibirArvore(no->esq,nivel+1,"esq");}
 }
 
-void exibirQuantidade() {
-	cout << "Quantidade de elementos: " << elementosArvore(raiz) << endl;
-
+void Altura(NO* no,int alt,bool Dir){
+    if(no==NULL){
+        if(Dir){
+            if(alt>AlturaArvoreDir){AlturaArvoreDir=alt-1;}
+        }
+        else{
+            if(alt>AlturaArvoreEsq){AlturaArvoreEsq=alt-1;}
+        }
+        return;
+    }
+    Altura(no->dir,alt+1,Dir);
+    Altura(no->esq,alt+1,Dir);
 }
-
-void exibir() {
-	exibirElementosArvore(raiz, 0);
-}
-
-void buscar() {
-	int valor;
-	cout << "Digite o elemento: ";
-	cin >> valor;
-	buscarElementoArvore(raiz, valor);
-}
-
-
-NO* criaNO(int valor)
-{
-	NO* novo = (NO*)malloc(sizeof(NO));
-	if (novo == NULL)
-	{
-		return NULL;
-	}
-	novo->valor = valor;
-	novo->esq = NULL;
-	novo->dir = NULL;
-	novo->altura = 0;
-	return novo;
-}
-
-
-int alturaNo(NO* no)
-{
-	if (no == NULL) {
-		return -1;
-	}
-	else {
-		return no->altura;
-	}
-}
-
-int fatorBalanceamento(NO* no)
-{
-	if (no == NULL) {
-		return 0;
-	}
-	return alturaNo(no->esq) - alturaNo(no->dir);
-}
-
-
-int max(int a, int b)
-{
-	if (a > b) {
-		return a;
-	}
-	else {
-		return b;
-	}
-}
-
-
-NO* insereArvore(NO* no, int valor)
-{
-
-	if (no == NULL) {
-		// arvore vazia
-		return criaNO(valor);
-	}
-	else if (valor < no->valor) {
-		// insere na subarvore esquerda
-		no->esq = insereArvore(no->esq, valor);
-	}
-	else if (valor > no->valor) {
-		// insere na subarvore direita
-		no->dir = insereArvore(no->dir, valor);
-	}
-	else {
-		// valor ja existe
-		return no;
-	}
-
-	// atualiza a altura do no (lembre-se que esta é função recursiva)
-
-	no->altura = max(alturaNo(no->esq), alturaNo(no->dir)) + 1;
-
-	// calcula o fator de balanceamento
-	int fator = fatorBalanceamento(no);
-
-	// verifica se precisa balancear
-	if (fator > 1 && valor < no->esq->valor) {
-		return girarDireita(no);
-	}
-	if (fator < -1 && valor > no->dir->valor) {
-		return girarEsquerda(no);
-	}
-	if (fator > 1 && valor > no->esq->valor) {
-		no->esq = girarEsquerda(no->esq);
-		return girarDireita(no);
-	}
-	if (fator < -1 && valor < no->dir->valor) {
-		no->dir = girarDireita(no->dir);
-		return girarEsquerda(no);
-	}
-	return no;
-
-}
-
-NO* girarDireita(NO* no)
-{
-	// sua implementação vai aqui
-	return no;
-}
-
-NO* girarEsquerda(NO* no)
-{
-	// sua implementação vai aqui
-	return no;
-}
-
-int elementosArvore(NO* no)
-{
-	if (no == NULL) {
-		return 0;
-	}
-
-	return 1 + elementosArvore(no->esq) + elementosArvore(no->dir);
-}
-
-
-// simula a hierarquia da arvore usando espacos e exibe os elementos 
-// horizontalmente 
-void exibirElementosArvore(NO* no, int qtEspacos)
-{
-	const int espaco = 4;
-
-	if (no == NULL) {
-		return;
-	}
-	qtEspacos += espaco;
-
-	//exibe a subarvore da direita
-	exibirElementosArvore(no->dir, qtEspacos);
-	cout << endl;
-
-	for (int i = espaco; i < qtEspacos; i++)
-		cout << " ";
-
-	// exibir o no atual
-	cout << no->valor << endl;
-
-	//exibe a subarvore da esquerda
-	exibirElementosArvore(no->esq, qtEspacos);
-
-}
-
-void buscarElementoArvore(NO* no, int valor)
-{
-	if (no == NULL) {
-		cout << "Elemento nao encontrado \n";
-		return;
-	}
-
-	if (no->valor == valor) {
-		cout << "Elemento encontrado \n";
-		return;
-	}
-
-	if (valor < no->valor) {
-		buscarElementoArvore(no->esq, valor);
-	}
-	else {
-		buscarElementoArvore(no->dir, valor);
-	}
-}
-
-
-// versao nao recursiva
-NO* buscarElementoArvoreComPai(NO* no, int valor, NO*& pai)
-{
-	NO* atual = no;
-	pai = NULL;
-	while (atual != NULL) {
-		if (valor == atual->valor) {
-			return atual;
-		}
-		else {
-			pai = atual;
-
-			if (valor < atual->valor) {
-				atual = atual->esq;
-			}
-			else {
-				atual = atual->dir;
-			}
-		}
-	}
-	return NULL;
-}
-
-
-
-
-
-
-
-
