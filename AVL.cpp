@@ -217,7 +217,11 @@ NO* girarDireita(NO* no)
 	// sua implementa��o vai aqui
 	NO* GalhoLateral = no;
 	no=no->esq;
-	no->dir=GalhoLateral;
+	NO* Ponta = no;
+	while(Ponta->dir!=NULL){
+	    Ponta=Ponta->dir;
+	}
+	Ponta->dir=GalhoLateral;
 	GalhoLateral->esq=NULL;
 	return no;
 }
@@ -227,7 +231,11 @@ NO* girarEsquerda(NO* no)
 	// sua implementa��o vai aqui
 	NO* GalhoLateral = no;
 	no=no->dir;
-	no->esq=GalhoLateral;
+	NO* Ponta=no;
+	while(Ponta->esq!=NULL){
+	    Ponta = Ponta->esq;
+	}
+	Ponta->esq=GalhoLateral;
 	GalhoLateral->dir=NULL;
 	return no;
 }
@@ -321,7 +329,6 @@ void ExibeArvore(NO* no,int nivel){
     ExibeArvore(no->dir,nivel+1);
     ExibeArvore(no->esq,nivel+1);
 }
-
 
 
 
