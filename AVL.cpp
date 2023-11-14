@@ -13,7 +13,7 @@ struct NO {
 NO* raiz = NULL;
 int AlturaDir=0;
 int AlturaEsq=0;
-
+int AlturaCalculada=0;
 // headers
 // estrutura principal
 void menu();
@@ -36,6 +36,8 @@ void ExibeArvore(NO* no,int nivel);
 
 // funcoes auxiliares balaceamento
 int alturaNo(NO* no);
+void Altura(NO* no,int nivel,NO* galho);
+void DefineAlturas(NO* no);
 int fatorBalanceamento(NO* no);
 int max(int a, int b);
 NO* girarDireita(NO* no);
@@ -52,6 +54,7 @@ void menu()
 {
 	int op = 0;
 	while (op != 6) {
+	    DefineAlturas(raiz);
 		system("clear"); // somente no windows
 		cout << "Menu Arvore";
 		cout << endl << endl;
@@ -132,7 +135,17 @@ NO* criaNO(int valor)
 	return novo;
 }
 
-
+void Altura(NO* no,int nivel,NO* galho){
+    if(no==NULL){
+        if(nivel>AlturaCalculada){
+            AlturaCalculada=nivel-1;
+        }
+        galho->altura=AlturaCalculada;
+        return;
+    }
+    Altura(no->dir,nivel+1,galho);
+    Altura(no->esq,nivel+1,galho);
+}
 int alturaNo(NO* no)
 {
 	if (no == NULL) {
@@ -141,6 +154,16 @@ int alturaNo(NO* no)
 	else {
 		return no->altura;
 	}
+}
+
+void DefineAlturas(NO* no){
+    if(no==NULL){
+        return;
+    }
+    AlturaCalculada=0;
+    Altura(no,0,no);
+    DefineAlturas(no->dir);
+    DefineAlturas(no->esq);
 }
 
 int fatorBalanceamento(NO* no)
@@ -325,11 +348,10 @@ void ExibeArvore(NO* no,int nivel){
     for(int i=0;i<nivel;i++){
         cout<<" - ";
     }
-    cout<<no->valor<<endl;
+    cout<<no->valor<<"("<<no->altura<<")\n";
     ExibeArvore(no->dir,nivel+1);
     ExibeArvore(no->esq,nivel+1);
 }
-
 
 
 
